@@ -6,11 +6,13 @@
     "fr": "Prévisions, conditions courantes et avertissements météo de l’IRM/KMI pour la Belgique, le Luxembourg et les Pays-Bas.",
     "en": "IRM/KMI current weather, forecasts and alerts for Belgium, Luxembourg and the Netherlands."
   },
-  "version": "1.0.0",
-  "docker_image": "ghcr.io/your-github-username/gladys-meteo-benelux:1.0.0",
+  "version": "1.0.1",
+  "docker_image": "ghcr.io/gboulvin/gladys-irm-kmi-v2:1.0.1",
   "gladys_version": ">=4.85.0",
   "cover_image": "https://raw.githubusercontent.com/your-github-username/gladys-meteo-benelux/main/cover.jpg",
-  "transports": ["cloud"],
+  "transports": [
+    "cloud"
+  ],
   "config_schema": [
     {
       "key": "intro",
