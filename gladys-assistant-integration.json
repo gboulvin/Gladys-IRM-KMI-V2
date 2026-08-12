@@ -3,7 +3,7 @@
   "type": "weather",
   "name": "Météo Bénélux",
   "description": {
-    "fr": "Prévisions, conditions courantes et avertissements météo de l’IRM/KMI pour la Belgique, le Luxembourg et les Pays-Bas.",
+    "fr": "Prévisions, conditions courantes et avertissements météo de l’IRM/KMI pour le Benelux.",
     "en": "IRM/KMI current weather, forecasts and alerts for Belgium, Luxembourg and the Netherlands."
   },
   "version": "1.0.1",
