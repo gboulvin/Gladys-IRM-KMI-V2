@@ -15,10 +15,44 @@ import {
 import { buildApiKey, formatBrusselsDate, getForecast } from '../src/irm-kmi-api.js';
 
 const FIXTURE_URL = new URL('./fixtures/irm-kmi-forecast.json', import.meta.url);
+const MANIFEST_URL = new URL('../gladys-assistant-integration.json', import.meta.url);
 
 async function readFixture() {
   return JSON.parse(await readFile(FIXTURE_URL, 'utf8'));
 }
+
+async function readManifest() {
+  return JSON.parse(await readFile(MANIFEST_URL, 'utf8'));
+}
+
+test('le manifeste déclare une catégorie de catalogue compatible Gladys 4.86', async () => {
+  const manifest = await readManifest();
+  const allowedCategories = new Set([
+    'climate',
+    'lighting',
+    'energy',
+    'security',
+    'multimedia',
+    'appliances',
+    'environment',
+    'protocols',
+    'network',
+    'notifications',
+    'assistants',
+    'services',
+  ]);
+
+  assert.ok(Array.isArray(manifest.categories));
+  assert.ok(manifest.categories.length >= 1 && manifest.categories.length <= 3);
+  assert.ok(manifest.categories.every((category) => allowedCategories.has(category)));
+  const minimum = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/);
+  assert.ok(minimum, 'gladys_version must declare a minimum version');
+  const [, major, minor] = minimum.map(Number);
+  assert.ok(
+    major > 4 || (major === 4 && minor >= 86),
+    `categories requires Gladys >= 4.86.0, got "${manifest.gladys_version}"`,
+  );
+});
 
 test('les codes de condition IRM/KMI sont normalisés pour le pivot Gladys', () => {
   assert.equal(conditionFromCode(0), 'clear');

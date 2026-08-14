@@ -8,11 +8,10 @@
   },
   "version": "1.0.2",
   "docker_image": "ghcr.io/gboulvin/gladys-irm-kmi-v2:1.0.2",
-  "gladys_version": ">=4.85.0",
-  "cover_image": "https://raw.githubusercontent.com/your-github-username/gladys-meteo-benelux/main/cover.jpg",
-  "transports": [
-    "cloud"
-  ],
+  "gladys_version": ">=4.86.0",
+  "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-IRM-KMI-V2/main/cover.jpg",
+  "categories": ["environment"],
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
