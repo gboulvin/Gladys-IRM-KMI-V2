@@ -6,6 +6,8 @@ project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-14
+
 ### Added
 
 - Dutch, German and Spanish translations of the catalog card, the
@@ -38,5 +40,6 @@ project uses [semantic versioning](https://semver.org/).
 
 - Update the integration for Gladys 4.86 (catalog `categories`).
 
-[Unreleased]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.0.3...HEAD
+[Unreleased]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.0.2...v1.0.3
