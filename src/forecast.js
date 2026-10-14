@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------------
 
 import { buildAlerts } from './alerts.js';
+import { DEFAULT_LANGUAGE } from './i18n.js';
 import { conditionFromCode, isDaytime } from './conditions.js';
 
 // Bornes du contrat météo B.18 : Gladys ne conserve pas davantage d’entrées.
@@ -396,7 +397,10 @@ function buildCurrent(observation, hours, { units, uvIndex }) {
  * @param {Date} [options.now] - Horloge injectable pour les tests.
  * @returns {object} Réponse météo pivot Gladys.
  */
-function buildWeather(data, { units = 'metric', language = 'fr', now = new Date() } = {}) {
+function buildWeather(
+  data,
+  { units = 'metric', language = DEFAULT_LANGUAGE, now = new Date() } = {},
+) {
   const hourly = data?.for?.hourly;
   const daily = data?.for?.daily;
   const hours = buildHours(hourly, { units, now });

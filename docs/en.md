@@ -33,7 +33,7 @@ No personal information is needed. The optional **Cache duration** setting defau
 
 Gladys sends a request with latitude, longitude, language and the user’s preferred units. The integration rounds the coordinates, queries the IRM/KMI API and returns the result in Gladys’ standard weather format. Source data is metric; wind is returned in metres per second for metric users, and values are converted to Fahrenheit, miles per hour and inches whenever Gladys requests US units.[4]
 
-Warning messages are selected in the requested language where available. IRM/KMI warning levels 1, 2 and 3 are represented by `minor`, `moderate` and `severe` severities. Warnings lacking a dependable type or severity are deliberately omitted to avoid ambiguous notifications.
+Warnings are shown in the user’s language when IRM/KMI provides it (English, French, Dutch or German), otherwise in English. IRM/KMI warning levels 1, 2 and 3 are represented by `minor`, `moderate` and `severe` severities. Warnings lacking a dependable type or severity are deliberately omitted to avoid ambiguous notifications.
 
 ## Limitations
 

@@ -6,28 +6,29 @@
 
 > Le service distant est issu de l’API non documentée de l’application mobile de l’IRM/KMI. Son interface peut évoluer sans préavis ; l’intégration ne prétend donc pas être affiliée, sponsorisée ou validée par l’IRM/KMI.[2]
 
-| Décision           | Choix retenu                                                                                                                      | Justification                                                                                                             |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Type d’intégration | `weather`                                                                                                                         | Gladys fournit la position à chaque requête et attend une réponse dans le format météo pivot.[3]                          |
-| Transport          | `cloud`                                                                                                                           | La source de données est une API HTTPS distante.                                                                          |
-| Configuration      | `cache_duration` facultatif, 600 secondes par défaut                                                                              | La réponse est identique à court terme pour une même position ; le cache réduit les appels à une API non documentée.      |
-| API IRM/KMI        | `https://app.meteo.be/services/appv4/?s=getForecasts`                                                                             | Le client de référence demande une clé calculée quotidiennement, avec latitude et longitude arrondies à six décimales.[4] |
-| Langue             | Français, néerlandais, anglais ou allemand, normalisée à `fr`, `nl`, `en` ou `de`                                                 | Ces quatre langues sont proposées dans les données textuelles de l’IRM/KMI.[4]                                            |
-| Dégradation        | Un échec de l’API principale échoue explicitement ; les avertissements incomplets sont omis sans masquer la prévision principale. | Les données météo doivent rester cohérentes et vérifiables.                                                               |
+| Décision           | Choix retenu                                                                                                                      | Justification                                                                                                                                                                                         |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Type d’intégration | `weather`                                                                                                                         | Gladys fournit la position à chaque requête et attend une réponse dans le format météo pivot.[3]                                                                                                      |
+| Transport          | `cloud`                                                                                                                           | La source de données est une API HTTPS distante.                                                                                                                                                      |
+| Configuration      | `cache_duration` facultatif, 600 secondes par défaut                                                                              | La réponse est identique à court terme pour une même position ; le cache réduit les appels à une API non documentée.                                                                                  |
+| API IRM/KMI        | `https://app.meteo.be/services/appv4/?s=getForecasts`                                                                             | Le client de référence demande une clé calculée quotidiennement, avec latitude et longitude arrondies à six décimales.[4]                                                                             |
+| Langue             | Anglais, français, néerlandais, allemand ou espagnol (`en`, `fr`, `nl`, `de`, `es`), repli anglais                                | L’IRM/KMI publie ses textes en français, néerlandais, anglais et allemand ; les autres langues reçoivent ses textes en anglais, les textes propres à l’intégration existant dans les cinq langues.[4] |
+| Dégradation        | Un échec de l’API principale échoue explicitement ; les avertissements incomplets sont omis sans masquer la prévision principale. | Les données météo doivent rester cohérentes et vérifiables.                                                                                                                                           |
 
 ## Modules
 
 Le point d’entrée reste volontairement mince ; `src/app.js` reçoit le client Gladys en paramètre, ce qui permet de le tester contre le faux Gladys du SDK. Il associe les hooks météo du SDK à quatre modules indépendants : un client HTTP pour le protocole IRM/KMI, un cache mémoire par position, un normaliseur de prévision et un normaliseur d’avertissements. Cette séparation reprend le principe du template officiel — infrastructure SDK dans le point d’entrée, logique métier isolée — et l’architecture de l’intégration Météo France.[3]
 
-| Module                  | Responsabilité                                                                                                 |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `index.js`              | Instancier le SDK, enregistrer les handlers puis se connecter.                                                 |
-| `src/app.js`            | Recevoir les requêtes Gladys, actualiser la configuration et publier l’état de connexion.                      |
-| `src/irm-kmi-api.js`    | Construire l’URL signée du jour, appliquer un délai d’expiration, valider le code HTTP et décoder le JSON.     |
-| `src/forecast.js`       | Transformer les observations et prévisions IRM/KMI dans le pivot Gladys, avec conversions métrique / impérial. |
-| `src/conditions.js`     | Traduire les codes d’icône IRM/KMI vers les conditions normalisées Gladys.                                     |
-| `src/alerts.js`         | Convertir les avertissements IRM/KMI en alertes pivot, avec type, gravité, durée et texte localisé.            |
-| `src/forecast-cache.js` | Éviter les requêtes dupliquées par clé latitude / longitude / unités / langue.                                 |
+| Module                  | Responsabilité                                                                                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `index.js`              | Instancier le SDK, enregistrer les handlers puis se connecter.                                                  |
+| `src/app.js`            | Recevoir les requêtes Gladys, actualiser la configuration et publier l’état de connexion.                       |
+| `src/irm-kmi-api.js`    | Construire l’URL signée du jour, appliquer un délai d’expiration, valider le code HTTP et décoder le JSON.      |
+| `src/forecast.js`       | Transformer les observations et prévisions IRM/KMI dans le pivot Gladys, avec conversions métrique / impérial.  |
+| `src/conditions.js`     | Traduire les codes d’icône IRM/KMI vers les conditions normalisées Gladys.                                      |
+| `src/alerts.js`         | Convertir les avertissements IRM/KMI en alertes pivot, avec type, gravité, durée et texte localisé.             |
+| `src/i18n.js`           | Normaliser la langue demandée (repli anglais) et traduire les messages propres à l’intégration en cinq langues. |
+| `src/forecast-cache.js` | Éviter les requêtes dupliquées par clé latitude / longitude / unités / langue.                                  |
 
 ## Correspondances de données
 

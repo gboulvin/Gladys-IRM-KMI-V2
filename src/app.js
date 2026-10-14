@@ -14,9 +14,8 @@ import { logger as defaultLogger } from '@gladysassistant/integration-sdk';
 import { normalizeConfig } from './config.js';
 import { createForecastCache } from './forecast-cache.js';
 import { buildWeather } from './forecast.js';
+import { MESSAGES, normalizeLanguage } from './i18n.js';
 import { getForecast as defaultGetForecast } from './irm-kmi-api.js';
-
-const SUPPORTED_LANGUAGES = ['fr', 'nl', 'en', 'de'];
 
 /**
  * @description Rend une localisation demandée exploitable par l'API IRM/KMI.
@@ -24,14 +23,10 @@ const SUPPORTED_LANGUAGES = ['fr', 'nl', 'en', 'de'];
  * @returns {{latitude: number, longitude: number, language: string, units: string}} Valeurs normalisées.
  */
 function normalizeWeatherRequest({ latitude, longitude, language, units }) {
-  const requestedLanguage = typeof language === 'string' ? language.toLowerCase() : 'fr';
-  const normalizedLanguage = SUPPORTED_LANGUAGES.includes(requestedLanguage)
-    ? requestedLanguage
-    : 'fr';
   return {
     latitude: Number(latitude),
     longitude: Number(longitude),
-    language: normalizedLanguage,
+    language: normalizeLanguage(language),
     units: units === 'us' ? 'us' : 'metric',
   };
 }
@@ -84,12 +79,7 @@ function registerHandlers(
       logger.info('Météo Bénélux est prête à fournir des prévisions IRM/KMI');
     } catch (error) {
       logger.error('Initialisation impossible', error);
-      await gladys
-        .setConnectionStatus(false, {
-          fr: "L'initialisation a échoué ; consultez les journaux de l'intégration.",
-          en: 'Initialization failed; check the integration logs.',
-        })
-        .catch(() => {});
+      await gladys.setConnectionStatus(false, { ...MESSAGES.initializationFailed }).catch(() => {});
     }
   });
 
@@ -101,4 +91,4 @@ function registerHandlers(
   return { getConfig: () => config };
 }
 
-export { SUPPORTED_LANGUAGES, normalizeWeatherRequest, registerHandlers };
+export { normalizeWeatherRequest, registerHandlers };

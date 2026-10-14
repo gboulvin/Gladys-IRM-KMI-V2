@@ -33,7 +33,7 @@ L’intégration ne demande aucune information personnelle. Le réglage **Durée
 
 Gladys adresse une demande incluant la latitude, la longitude, la langue et les unités de l’utilisateur. L’intégration arrondit les coordonnées, interroge l’API IRM/KMI puis renvoie le résultat dans le format météo standard de Gladys. Les données sources sont métriques ; le vent est renvoyé en mètres par seconde en système métrique, et les valeurs sont converties en Fahrenheit, miles par heure et pouces lorsque Gladys demande le système impérial.[4]
 
-Les messages d’avertissement sont sélectionnés dans la langue demandée lorsqu’elle est disponible. Les niveaux IRM/KMI 1, 2 et 3 sont rendus avec les gravités `minor`, `moderate` et `severe`. Les avertissements sans niveau ou sans identifiant fiable sont volontairement omis afin d’éviter toute alerte ambiguë.
+Les avertissements sont affichés dans la langue de l’utilisateur lorsque l’IRM/KMI la fournit (français, néerlandais, anglais ou allemand), sinon en anglais. Les niveaux IRM/KMI 1, 2 et 3 sont rendus avec les gravités `minor`, `moderate` et `severe`. Les avertissements sans niveau ou sans identifiant fiable sont volontairement omis afin d’éviter toute alerte ambiguë.
 
 ## Limites
 

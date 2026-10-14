@@ -37,10 +37,10 @@ test('la requête Gladys est normalisée (langue et unités)', () => {
     normalizeWeatherRequest({ latitude: '50.5', longitude: '4.1', language: 'NL', units: 'us' }),
     { latitude: 50.5, longitude: 4.1, language: 'nl', units: 'us' },
   );
-  assert.deepEqual(normalizeWeatherRequest({ latitude: 1, longitude: 2, language: 'es' }), {
+  assert.deepEqual(normalizeWeatherRequest({ latitude: 1, longitude: 2, language: 'it' }), {
     latitude: 1,
     longitude: 2,
-    language: 'fr',
+    language: 'en',
     units: 'metric',
   });
 });
@@ -89,7 +89,7 @@ test('un échec IRM/KMI acquitte la commande en échec', async () => {
   assert.equal(ack.success, false);
 });
 
-test('une configuration illisible publie un statut déconnecté bilingue', async () => {
+test('une configuration illisible publie un statut déconnecté multilingue', async () => {
   const gladys = createFakeGladys();
   // connect() resynchronise d’abord la configuration lui-même : seul l’appel
   // fait par le listener 'connected' (client déjà connecté) échoue.
@@ -103,8 +103,13 @@ test('une configuration illisible publie un statut déconnecté bilingue', async
   registerHandlers(gladys, { logger: silentLogger, getForecast: async () => ({}) });
   await gladys.connect();
   assert.equal(gladys.fake.connectionStatus.connected, false);
-  assert.ok(gladys.fake.connectionStatus.message.fr);
-  assert.ok(gladys.fake.connectionStatus.message.en);
+  assert.deepEqual(Object.keys(gladys.fake.connectionStatus.message).sort(), [
+    'de',
+    'en',
+    'es',
+    'fr',
+    'nl',
+  ]);
 });
 
 test('l’arrêt propre se termine sans erreur', async () => {

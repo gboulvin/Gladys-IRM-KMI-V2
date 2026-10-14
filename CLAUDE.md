@@ -38,9 +38,10 @@ src/forecast.js                   IRM/KMI payload -> Gladys pivot weather format
 src/conditions.js                 IRM/KMI `ww` codes -> WEATHER_CONDITIONS
 src/alerts.js                     IRM/KMI warnings -> pivot alerts (severity, type, dates)
 src/forecast-cache.js             in-memory cache keyed by position / language / units
+src/i18n.js                       supported languages, language normalization, own messages
 src/config.js                     defaults (mirror the manifest) + normalization
 gladys-assistant-integration.json manifest
-docs/en.md, docs/fr.md            user documentation, re-hosted by Gladys (mandatory)
+docs/<en|fr|nl|de|es>.md          user documentation, re-hosted by Gladys (mandatory)
 test/                             node --test; app.test.js runs against the SDK's fake Gladys
 .github/scripts/release.mjs       release helpers (manifest bump, changelog), tested in test/
 ```
@@ -63,7 +64,9 @@ test/                             node --test; app.test.js runs against the SDK'
 - **Manifest.** Texts are multi-language objects `{ "en": ..., "fr": ... }`.
   The catalog `description` holds 10 to 100 characters per language. Config
   keys (`cache_duration`) are stored by users: never rename them.
-- **User-facing text** is bilingual (English and French), `docs/en.md` and
-  `docs/fr.md` kept in sync.
+- **User-facing text** exists in five languages: English, French, Dutch,
+  German and Spanish (`SUPPORTED_LANGUAGES` in `src/i18n.js`): manifest texts,
+  `MESSAGES`, and `docs/<lang>.md`, kept in sync. `test/i18n.test.js` checks
+  every manifest text and message has all five.
 - **Style.** Prettier formats, ESLint catches mistakes. Tests never touch the
   network.

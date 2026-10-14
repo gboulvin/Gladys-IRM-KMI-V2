@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------------------
 
 import { WEATHER_ALERT_SEVERITIES, WEATHER_ALERT_TYPES } from '@gladysassistant/integration-sdk';
+import { DEFAULT_LANGUAGE, PROVIDER_FALLBACK_LANGUAGES, translate } from './i18n.js';
 
 const ALERT_TYPE_BY_WARNING_ID = {
   0: WEATHER_ALERT_TYPES.WIND,
@@ -32,7 +33,8 @@ const MAX_EVENT_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 5000;
 
 /**
- * @description Sélectionne une chaîne localisée avec repli anglais puis français.
+ * @description Sélectionne une chaîne localisée, avec repli anglais, français,
+ * néerlandais puis allemand (l’IRM/KMI ne publie pas d’autre langue).
  * @param {unknown} value - Objet de traductions retourné par l’IRM/KMI.
  * @param {string} language - Langue normalisée demandée par Gladys.
  * @returns {string} Texte exploitable, ou chaîne vide.
@@ -44,8 +46,13 @@ function localizedText(value, language) {
   if (!value || typeof value !== 'object') {
     return '';
   }
-  const candidate = value[language] ?? value.en ?? value.fr ?? value.nl ?? value.de;
-  return typeof candidate === 'string' ? candidate.trim() : '';
+  for (const candidate of [language, ...PROVIDER_FALLBACK_LANGUAGES]) {
+    const text = value[candidate];
+    if (typeof text === 'string' && text.trim() !== '') {
+      return text.trim();
+    }
+  }
+  return '';
 }
 
 /**
@@ -55,7 +62,7 @@ function localizedText(value, language) {
  * @param {string} [options.language] - Langue demandée par Gladys.
  * @returns {Array<object>} Alertes validables par le contrat météo Gladys.
  */
-function buildAlerts(warnings, { language = 'fr' } = {}) {
+function buildAlerts(warnings, { language = DEFAULT_LANGUAGE } = {}) {
   if (!Array.isArray(warnings)) {
     return [];
   }
@@ -71,7 +78,9 @@ function buildAlerts(warnings, { language = 'fr' } = {}) {
       return [];
     }
 
-    const name = localizedText(warning.warningType?.name, language) || `Avertissement ${id}`;
+    const name =
+      localizedText(warning.warningType?.name, language) ||
+      `${translate('warning', language)} ${id}`;
     const alert = {
       severity,
       event: name.slice(0, MAX_EVENT_LENGTH),

@@ -154,3 +154,22 @@ test('les avertissements sont plafonnés aux dix alertes conservées par Gladys'
   assert.equal(alerts.length, 10);
   assert.equal(alerts[0].event, 'Vent 0');
 });
+
+test('les textes IRM/KMI retombent sur l’anglais pour une langue non publiée (espagnol)', () => {
+  const warning = {
+    warningType: { id: 1, name: { fr: 'Pluie', nl: 'Regen', en: 'Rain', de: 'Regen' } },
+    warningLevel: 1,
+    text: { fr: 'Averses.', nl: 'Buien.', en: 'Showers.', de: 'Schauer.' },
+  };
+  assert.equal(buildAlerts([warning], { language: 'nl' })[0].event, 'Regen');
+  assert.equal(buildAlerts([warning], { language: 'de' })[0].description, 'Schauer.');
+  assert.equal(buildAlerts([warning], { language: 'es' })[0].event, 'Rain');
+  assert.equal(buildAlerts([warning], { language: 'es' })[0].description, 'Showers.');
+});
+
+test('le libellé de secours d’un avertissement sans nom est traduit', () => {
+  const warning = { warningType: { id: 7 }, warningLevel: 2 };
+  assert.equal(buildAlerts([warning], { language: 'nl' })[0].event, 'Weerwaarschuwing 7');
+  assert.equal(buildAlerts([warning], { language: 'es' })[0].event, 'Aviso meteorológico 7');
+  assert.equal(buildAlerts([warning])[0].event, 'Weather warning 7');
+});
