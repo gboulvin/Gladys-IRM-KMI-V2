@@ -2,12 +2,15 @@
 // Réponse IRM/KMI -> format météo pivot Gladys.
 //
 // L'IRM/KMI fournit les valeurs métriques : °C, km/h, mm et hPa. Le fournisseur
-// météo Gladys doit, lui, répondre dans le système d'unités demandé.
+// météo Gladys doit, lui, répondre dans le système d'unités demandé : °C, m/s,
+// hPa et mm en `metric` ; °F, mph, pouces en `us` (contrat B.18 du SDK).
 // -----------------------------------------------------------------------------
 
 import { buildAlerts } from './alerts.js';
+import { DEFAULT_LANGUAGE } from './i18n.js';
 import { conditionFromCode, isDaytime } from './conditions.js';
 
+// Bornes du contrat météo B.18 : Gladys ne conserve pas davantage d’entrées.
 const MAX_DAYS = 8;
 const MAX_HOURS = 24;
 const BRUSSELS_TIME_ZONE = 'Europe/Brussels';
@@ -54,13 +57,15 @@ function convertTemperature(celsius, units) {
 }
 
 /**
- * @description Convertit une vitesse de km/h vers mph si nécessaire.
+ * @description Convertit une vitesse IRM/KMI (km/h) vers l’unité du pivot :
+ * m/s en système métrique, mph en système américain.
  * @param {number} kilometersPerHour - Vitesse en km/h.
  * @param {string} units - `metric` ou `us`.
- * @returns {number} Vitesse convertie.
+ * @returns {number} Vitesse convertie, arrondie au dixième.
  */
 function convertWindSpeed(kilometersPerHour, units) {
-  return units === 'us' ? Math.round(kilometersPerHour * 0.621371 * 10) / 10 : kilometersPerHour;
+  const factor = units === 'us' ? 0.621371 : 1 / 3.6;
+  return Math.round(kilometersPerHour * factor * 10) / 10;
 }
 
 /**
@@ -392,7 +397,10 @@ function buildCurrent(observation, hours, { units, uvIndex }) {
  * @param {Date} [options.now] - Horloge injectable pour les tests.
  * @returns {object} Réponse météo pivot Gladys.
  */
-function buildWeather(data, { units = 'metric', language = 'fr', now = new Date() } = {}) {
+function buildWeather(
+  data,
+  { units = 'metric', language = DEFAULT_LANGUAGE, now = new Date() } = {},
+) {
   const hourly = data?.for?.hourly;
   const daily = data?.for?.daily;
   const hours = buildHours(hourly, { units, now });

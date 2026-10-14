@@ -2,32 +2,39 @@
 // Avertissements IRM/KMI -> alertes météo pivot Gladys.
 // -----------------------------------------------------------------------------
 
+import { WEATHER_ALERT_SEVERITIES, WEATHER_ALERT_TYPES } from '@gladysassistant/integration-sdk';
+import { DEFAULT_LANGUAGE, PROVIDER_FALLBACK_LANGUAGES, translate } from './i18n.js';
+
 const ALERT_TYPE_BY_WARNING_ID = {
-  0: 'wind',
-  1: 'rain',
-  2: 'snow',
-  3: 'thunderstorm',
-  7: 'fog',
-  9: 'cold',
-  10: 'heat',
-  12: 'thunderstorm',
-  13: 'thunderstorm',
-  14: 'thunderstorm',
-  15: 'coastal',
-  17: 'cold',
+  0: WEATHER_ALERT_TYPES.WIND,
+  1: WEATHER_ALERT_TYPES.RAIN,
+  2: WEATHER_ALERT_TYPES.SNOW,
+  3: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  7: WEATHER_ALERT_TYPES.FOG,
+  9: WEATHER_ALERT_TYPES.COLD,
+  10: WEATHER_ALERT_TYPES.HEAT,
+  12: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  13: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  14: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  15: WEATHER_ALERT_TYPES.COASTAL,
+  17: WEATHER_ALERT_TYPES.COLD,
 };
 
 const SEVERITY_BY_LEVEL = {
-  1: 'minor',
-  2: 'moderate',
-  3: 'severe',
+  1: WEATHER_ALERT_SEVERITIES.MINOR,
+  2: WEATHER_ALERT_SEVERITIES.MODERATE,
+  3: WEATHER_ALERT_SEVERITIES.SEVERE,
 };
 
+// Bornes du contrat météo B.18 : au-delà, le cœur Gladys tronque ou ignore.
+// Le SDK les définit sans les exporter publiquement.
+const MAX_ALERTS = 10;
 const MAX_EVENT_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 5000;
 
 /**
- * @description Sélectionne une chaîne localisée avec repli anglais puis français.
+ * @description Sélectionne une chaîne localisée, avec repli anglais, français,
+ * néerlandais puis allemand (l’IRM/KMI ne publie pas d’autre langue).
  * @param {unknown} value - Objet de traductions retourné par l’IRM/KMI.
  * @param {string} language - Langue normalisée demandée par Gladys.
  * @returns {string} Texte exploitable, ou chaîne vide.
@@ -39,8 +46,13 @@ function localizedText(value, language) {
   if (!value || typeof value !== 'object') {
     return '';
   }
-  const candidate = value[language] ?? value.en ?? value.fr ?? value.nl ?? value.de;
-  return typeof candidate === 'string' ? candidate.trim() : '';
+  for (const candidate of [language, ...PROVIDER_FALLBACK_LANGUAGES]) {
+    const text = value[candidate];
+    if (typeof text === 'string' && text.trim() !== '') {
+      return text.trim();
+    }
+  }
+  return '';
 }
 
 /**
@@ -50,12 +62,15 @@ function localizedText(value, language) {
  * @param {string} [options.language] - Langue demandée par Gladys.
  * @returns {Array<object>} Alertes validables par le contrat météo Gladys.
  */
-function buildAlerts(warnings, { language = 'fr' } = {}) {
+function buildAlerts(warnings, { language = DEFAULT_LANGUAGE } = {}) {
   if (!Array.isArray(warnings)) {
     return [];
   }
 
-  return warnings.flatMap((warning) => {
+  // Gladys ne conserve que les dix premières alertes : inutile d’en envoyer plus.
+  return warnings.flatMap(toAlert).slice(0, MAX_ALERTS);
+
+  function toAlert(warning) {
     const id = Number(warning?.warningType?.id);
     const level = Number(warning?.warningLevel);
     const severity = SEVERITY_BY_LEVEL[level];
@@ -63,7 +78,9 @@ function buildAlerts(warnings, { language = 'fr' } = {}) {
       return [];
     }
 
-    const name = localizedText(warning.warningType?.name, language) || `Avertissement ${id}`;
+    const name =
+      localizedText(warning.warningType?.name, language) ||
+      `${translate('warning', language)} ${id}`;
     const alert = {
       severity,
       event: name.slice(0, MAX_EVENT_LENGTH),
@@ -86,7 +103,7 @@ function buildAlerts(warnings, { language = 'fr' } = {}) {
       alert.end = end;
     }
     return [alert];
-  });
+  }
 }
 
 /**
@@ -104,6 +121,7 @@ function toIsoDate(value) {
 
 export {
   ALERT_TYPE_BY_WARNING_ID,
+  MAX_ALERTS,
   MAX_DESCRIPTION_LENGTH,
   MAX_EVENT_LENGTH,
   SEVERITY_BY_LEVEL,

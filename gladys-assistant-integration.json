@@ -3,37 +3,45 @@
   "type": "weather",
   "name": "Météo Bénélux",
   "description": {
+    "en": "IRM/KMI current weather, forecasts and alerts for Belgium, Luxembourg and the Netherlands.",
     "fr": "Prévisions, conditions courantes et avertissements météo de l’IRM/KMI pour le Benelux.",
-    "en": "IRM/KMI current weather, forecasts and alerts for Belgium, Luxembourg and the Netherlands."
+    "nl": "Actueel weer, verwachtingen en waarschuwingen van het KMI voor België, Luxemburg en Nederland.",
+    "de": "Aktuelles Wetter, Vorhersagen und Warnungen des IRM/KMI für Belgien, Luxemburg und die Niederlande.",
+    "es": "Tiempo actual, previsiones y avisos del IRM/KMI para Bélgica, Luxemburgo y los Países Bajos."
   },
   "version": "1.0.3",
   "docker_image": "ghcr.io/gboulvin/gladys-irm-kmi-v2:1.0.3",
   "gladys_version": ">=4.86.0",
   "cover_image": "https://raw.githubusercontent.com/gboulvin/Gladys-IRM-KMI-V2/main/cover.jpg",
-  "categories": [
-    "environment"
-  ],
-  "transports": [
-    "cloud"
-  ],
+  "categories": ["environment"],
+  "transports": ["cloud"],
   "config_schema": [
     {
       "key": "intro",
       "type": "section",
       "label": {
+        "en": "IRM/KMI data",
         "fr": "Données IRM/KMI",
-        "en": "IRM/KMI data"
+        "nl": "KMI-gegevens",
+        "de": "IRM/KMI-Daten",
+        "es": "Datos del IRM/KMI"
       },
       "description": {
+        "en": "This integration uses the undocumented mobile API of the Royal Meteorological Institute of Belgium. No account or personal key is required. The service covers Belgium, Luxembourg and the Netherlands; its interface may change without notice.",
         "fr": "Cette intégration utilise l’API mobile non documentée de l’Institut royal météorologique de Belgique. Aucun compte ni clé personnelle n’est requis. Le service couvre la Belgique, le Luxembourg et les Pays-Bas ; son interface peut évoluer sans préavis.",
-        "en": "This integration uses the undocumented mobile API of the Royal Meteorological Institute of Belgium. No account or personal key is required. The service covers Belgium, Luxembourg and the Netherlands; its interface may change without notice."
+        "nl": "Deze integratie gebruikt de ongedocumenteerde mobiele API van het Koninklijk Meteorologisch Instituut van België. Er is geen account of persoonlijke sleutel nodig. De dienst dekt België, Luxemburg en Nederland; de interface kan zonder voorafgaande kennisgeving wijzigen.",
+        "de": "Diese Integration nutzt die undokumentierte mobile API des Königlichen Meteorologischen Instituts von Belgien. Es werden weder ein Konto noch ein persönlicher Schlüssel benötigt. Der Dienst deckt Belgien, Luxemburg und die Niederlande ab; seine Schnittstelle kann sich ohne Vorankündigung ändern.",
+        "es": "Esta integración utiliza la API móvil no documentada del Real Instituto Meteorológico de Bélgica. No se necesita ninguna cuenta ni clave personal. El servicio cubre Bélgica, Luxemburgo y los Países Bajos; su interfaz puede cambiar sin previo aviso."
       },
       "links": [
         {
           "url": "https://github.com/jdejaegh/irm-kmi-api",
           "label": {
+            "en": "IRM/KMI protocol technical reference",
             "fr": "Référence technique du protocole IRM/KMI",
-            "en": "IRM/KMI protocol technical reference"
+            "nl": "Technische referentie van het KMI-protocol",
+            "de": "Technische Referenz des IRM/KMI-Protokolls",
+            "es": "Referencia técnica del protocolo IRM/KMI"
           }
         }
       ]
@@ -42,12 +50,18 @@
       "key": "cache_duration",
       "type": "number",
       "label": {
+        "en": "Cache duration (seconds)",
         "fr": "Durée du cache (secondes)",
-        "en": "Cache duration (seconds)"
+        "nl": "Cacheduur (seconden)",
+        "de": "Cache-Dauer (Sekunden)",
+        "es": "Duración de la caché (segundos)"
       },
       "description": {
+        "en": "How long a forecast for the same location is kept. Set to 0 to disable caching.",
         "fr": "Durée de conservation d’une prévision pour une même position. La valeur 0 désactive le cache.",
-        "en": "How long a forecast for the same location is kept. Set to 0 to disable caching."
+        "nl": "Hoe lang een verwachting voor dezelfde locatie wordt bewaard. Zet op 0 om de cache uit te schakelen.",
+        "de": "Wie lange eine Vorhersage für denselben Ort aufbewahrt wird. 0 deaktiviert den Cache.",
+        "es": "Tiempo durante el que se conserva una previsión para la misma ubicación. 0 desactiva la caché."
       },
       "required": false,
       "default": 600,

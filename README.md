@@ -1,66 +1,82 @@
-# Météo Bénélux pour Gladys Assistant
+# Benelux Weather for Gladys Assistant
 
-**Météo Bénélux** est une intégration externe Gladys de type `weather`. Elle expose les conditions courantes, les prévisions horaires et quotidiennes, ainsi que les avertissements météo de l’Institut royal météorologique de Belgique (IRM/KMI) pour les localisations couvertes en Belgique, au Luxembourg et aux Pays-Bas.[1] [2]
+**Benelux Weather** (_Météo Bénélux_) is a Gladys Assistant external integration of type `weather`. It provides current conditions, hourly and daily forecasts, and weather warnings from the Royal Meteorological Institute of Belgium (IRM/KMI) for locations in Belgium, Luxembourg and the Netherlands.[1] [2] Once installed, it replaces the built-in OpenWeather service for the dashboard weather widget, the chat assistant and weather-alert scenes, with no configuration.
 
-> Cette intégration s’appuie sur une API mobile non documentée de l’IRM/KMI. Elle n’est ni affiliée à l’Institut royal météorologique de Belgique, ni sponsorisée ou validée par celui-ci. L’API est susceptible d’évoluer sans préavis.[2]
+> This integration relies on an undocumented IRM/KMI mobile API. It is not affiliated with, sponsored or endorsed by the Royal Meteorological Institute of Belgium, and the API may change without notice.[2]
 
-| Capacité                | Détail                                                                                                             |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Conditions courantes    | Température, état du ciel, pression, vent, rafales et indice UV lorsqu’ils sont disponibles.                       |
-| Prévisions horaires     | Jusqu’à 24 échéances avec température, précipitation, probabilité de précipitation, vent et pression.              |
-| Prévisions quotidiennes | Jusqu’à 8 jours avec minimales, maximales, état du ciel, précipitation, vent et heures de lever/coucher du soleil. |
-| Avertissements          | Type, gravité, période de validité et message de l’IRM/KMI, dans la langue demandée.                               |
-| Unités                  | Réponse métrique ou impériale selon la préférence transmise par Gladys.                                            |
-
-## Installation et publication
-
-Le dépôt part du [template JavaScript officiel des intégrations Gladys][3]. Avant de publier l’intégration, remplacez **les deux occurrences** de `your-github-username` dans `gladys-assistant-integration.json` par le propriétaire réel du dépôt GitHub. Le manifeste pourra alors référencer l’image multi-architecture publiée dans GitHub Container Registry et l’illustration du catalogue.
-
-```bash
-npm ci
-npm test
-npm run lint
-```
-
-Après avoir poussé le dépôt sur GitHub, utilisez le workflow de publication fourni par le template. Il crée l’image correspondant à la version du manifeste. Ajoutez le sujet GitHub `gladys-assistant-integration` afin que Gladys puisse indexer l’intégration.[3]
+| Capability         | Details                                                                                               |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| Current conditions | Temperature, sky condition, pressure, wind, gusts and UV index when available.                        |
+| Hourly forecasts   | Up to 24 entries with temperature, precipitation, precipitation probability, wind and pressure.       |
+| Daily forecasts    | Up to 8 days with minimum and maximum temperatures, sky condition, precipitation, wind and sun times. |
+| Warnings           | Type, severity, validity period and IRM/KMI message, in the user's language.                          |
+| Units              | Metric (°C, m/s, hPa, mm) or US (°F, mph, in), following the preference sent by Gladys.               |
+| Languages          | English, French, Dutch, German and Spanish (interface, documentation and messages).                   |
 
 ## Configuration
 
-Aucune clé personnelle ni compte IRM/KMI n’est requis. Gladys transmet la latitude et la longitude de la localisation demandée ; l’intégration interroge alors le fournisseur pour cette position. Le seul réglage est la durée du cache, qui limite les appels répétés vers le service distant.
+No account, API key or personal data is needed: Gladys sends the latitude and longitude of the requested location with every request. The only setting is the cache duration, which limits repeated calls to the remote service.
 
-| Champ              | Valeur par défaut |              Plage | Effet                                                                                                                              |
-| ------------------ | ----------------: | -----------------: | ---------------------------------------------------------------------------------------------------------------------------------- |
-| **Durée du cache** |      600 secondes | 0 à 3 600 secondes | Conserve temporairement la même réponse pour une localisation et un système d’unités identiques. La valeur `0` désactive le cache. |
+| Field              |     Default |       Range | Effect                                                                                         |
+| ------------------ | ----------: | ----------: | ---------------------------------------------------------------------------------------------- |
+| **Cache duration** | 600 seconds | 0 – 3,600 s | Reuses the same response for an identical location, language and unit system. `0` disables it. |
 
-## Fonctionnement technique
+User documentation: [English](docs/en.md) · [Français](docs/fr.md) · [Nederlands](docs/nl.md) · [Deutsch](docs/de.md) · [Español](docs/es.md).
 
-Pour chaque demande, l’intégration arrondit les coordonnées à six décimales, calcule la clé quotidienne attendue par le service IRM/KMI et appelle `getForecasts`. Les données reçues sont ensuite converties dans le format météo pivot Gladys. Les températures, vents et précipitations sont convertis lorsque Gladys demande le système impérial. Le cache est invalidé dès que la configuration est mise à jour.[4]
+## How it works
 
-Les codes d’état de l’IRM/KMI sont traduits explicitement vers les conditions du pivot Gladys. Par exemple, les codes 0–1 correspondent à un ciel dégagé, les codes 24–27 au brouillard et les codes 11–12 ainsi que 22–23 à la neige. Les avertissements de niveau 1, 2 et 3 deviennent respectivement `minor`, `moderate` et `severe`.[1] [4]
+For each request, the integration rounds the coordinates to six decimals, computes the daily key expected by the IRM/KMI service and calls `getForecasts`.[4] The response is converted to the Gladys pivot weather format (contract B.18 of the SDK):
 
-## Limites connues
+- **Units.** IRM/KMI sends metric data with wind in km/h. Wind is converted to m/s for metric users, as the contract requires, and temperatures, wind and precipitation are converted when Gladys asks for US units.
+- **Conditions.** IRM/KMI condition codes are mapped explicitly to the SDK `WEATHER_CONDITIONS` (codes 0–1 clear, 11–12 and 22–23 snow, 24–27 fog…). The day/night marker is carried by `is_day`, so a rainy night stays `rain`.
+- **Warnings.** IRM/KMI levels 1, 2 and 3 become the `minor`, `moderate` and `severe` severities, with a phenomenon type from `WEATHER_ALERT_TYPES`. At most 10 warnings are sent, the number Gladys keeps.
+- **Languages.** The language sent by Gladys is normalized (`nl-BE` → `nl`); unsupported languages fall back to English. IRM/KMI publishes its texts in French, Dutch, English and German only, so Spanish users get the provider's warning texts in English, while the integration's own texts exist in all five languages.
+- **Cache.** Responses are cached in memory per location, language and unit system; the cache is cleared whenever the configuration changes.
 
-L’API ne fournit pas de données d’humidité ni de point de rosée. L’intégration ne crée donc pas de valeurs artificielles pour ces champs. Les prévisions quotidiennes peuvent contenir deux états pour une même période ; seule la première condition est publiée, conformément à la limite du modèle météo cible. Le radar animé et le pollen sont volontairement exclus de cette première version, car ils requièrent une interface spécifique hors du pivot météo principal.[1] [2]
+The architecture is described in [ARCHITECTURE.md](ARCHITECTURE.md) (in French).
 
-## Développement et vérification
+## Known limitations
 
-La suite de tests comprend un échantillon de réponse IRM/KMI, les conversions métriques/impériales, la signature de requête quotidienne, les alertes, le cache et la validation de configuration.
+The API does not provide humidity or dew point, so the integration does not invent these values. A daily forecast may hold two conditions for the same day; only the first is published, as the Gladys model allows one. Rain-radar animation and pollen are out of scope for now.[1] [2]
+
+## Development
+
+The project follows the [official Gladys JavaScript integration template][3] and uses [`@gladysassistant/integration-sdk`][5] 0.15, its only runtime dependency. Node.js 22 or later is required; the Docker image ships Node.js 24.
 
 ```bash
-npm test
-npm run lint
-npm run format:check
+npm ci
+npm test              # node --test, the built-in runner
+npm run lint          # ESLint
+npm run format:check  # Prettier
 ```
 
-La conception détaillée est disponible dans [ARCHITECTURE.md](ARCHITECTURE.md). La documentation utilisateur est proposée en [français](docs/fr.md) et en [anglais](docs/en.md).
+| Path                                 | Role                                                                    |
+| ------------------------------------ | ----------------------------------------------------------------------- |
+| `index.js`                           | Bootstrap: creates the SDK client, registers the handlers, connects.    |
+| `src/app.js`                         | SDK wiring: weather requests, configuration updates, connection status. |
+| `src/irm-kmi-api.js`                 | Signed HTTPS client of the IRM/KMI mobile API.                          |
+| `src/forecast.js`                    | IRM/KMI payload → Gladys pivot weather format.                          |
+| `src/conditions.js`, `src/alerts.js` | Condition codes and warnings mapping.                                   |
+| `src/i18n.js`                        | Supported languages and the integration's own messages.                 |
+| `src/forecast-cache.js`              | In-memory forecast cache.                                               |
+| `gladys-assistant-integration.json`  | Integration manifest.                                                   |
 
-## Licence
+Tests never touch the network. They cover the SDK wiring against the SDK's fake Gladys (`@gladysassistant/integration-sdk/testing`), manifest consistency, translations, the release scripts, a sample IRM/KMI response, unit conversions, request signing, warnings, the cache and configuration validation.
 
-Ce projet est distribué sous licence Apache-2.0, conformément au template Gladys utilisé comme point de départ.
+## Releasing
 
-## Références
+Run **Actions → Release** on GitHub and pick `patch`, `minor` or `major`. The workflow bumps `package.json` and the manifest (`version` and `docker_image`), moves the `## [Unreleased]` section of [CHANGELOG.md](CHANGELOG.md) under the new version, tags the commit, publishes the multi-architecture image (`linux/amd64`, `linux/arm64`) to GitHub Container Registry and creates the GitHub Release. Never edit versions by hand; record every user-visible change under `## [Unreleased]`.
 
-[1]: https://github.com/jdejaegh/irm-kmi-ha 'Intégration IRM/KMI pour Home Assistant'
-[2]: https://github.com/jdejaegh/irm-kmi-api 'Client Python IRM/KMI'
-[3]: https://github.com/GladysAssistant/integration-template-js 'Template officiel JavaScript pour intégration Gladys'
-[4]: https://github.com/jdejaegh/irm-kmi-api/blob/main/irm_kmi_api/api.py 'Implémentation du protocole IRM/KMI'
+The `gladys-assistant-integration` GitHub topic lets Gladys index the integration.[3]
+
+## License
+
+Apache-2.0, like the Gladys template this project starts from.
+
+## References
+
+[1]: https://github.com/jdejaegh/irm-kmi-ha 'IRM/KMI integration for Home Assistant'
+[2]: https://github.com/jdejaegh/irm-kmi-api 'IRM/KMI Python client'
+[3]: https://github.com/GladysAssistant/integration-template-js 'Official Gladys JavaScript integration template'
+[4]: https://github.com/jdejaegh/irm-kmi-api/blob/main/irm_kmi_api/api.py 'IRM/KMI protocol implementation'
+[5]: https://github.com/GladysAssistant/integration-sdk-js 'Gladys integration SDK for JavaScript'
