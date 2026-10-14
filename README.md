@@ -14,7 +14,7 @@
 
 ## Installation et publication
 
-Le dépôt part du [template JavaScript officiel des intégrations Gladys][3]. Avant de publier l’intégration, remplacez **les deux occurrences** de `your-github-username` dans `gladys-assistant-integration.json` par le propriétaire réel du dépôt GitHub. Le manifeste pourra alors référencer l’image multi-architecture publiée dans GitHub Container Registry et l’illustration du catalogue.
+Le dépôt part du [template JavaScript officiel des intégrations Gladys][3]. Il utilise le SDK `@gladysassistant/integration-sdk` 0.15 et Node.js 22 ou plus récent ; l’image Docker embarque Node.js 24. Le manifeste référence l’image multi-architecture publiée dans GitHub Container Registry et l’illustration du catalogue.
 
 ```bash
 npm ci
@@ -22,7 +22,7 @@ npm test
 npm run lint
 ```
 
-Après avoir poussé le dépôt sur GitHub, utilisez le workflow de publication fourni par le template. Il crée l’image correspondant à la version du manifeste. Ajoutez le sujet GitHub `gladys-assistant-integration` afin que Gladys puisse indexer l’intégration.[3]
+Pour publier une version, lancez **Actions → Release** sur GitHub (patch, minor ou major). Le workflow met à jour les versions, déplace la section `## [Unreleased]` de [CHANGELOG.md](CHANGELOG.md), crée le tag, publie l’image puis la GitHub Release. Ne modifiez jamais les versions à la main. Ajoutez le sujet GitHub `gladys-assistant-integration` afin que Gladys puisse indexer l’intégration.[3]
 
 ## Configuration
 
@@ -34,7 +34,7 @@ Aucune clé personnelle ni compte IRM/KMI n’est requis. Gladys transmet la lat
 
 ## Fonctionnement technique
 
-Pour chaque demande, l’intégration arrondit les coordonnées à six décimales, calcule la clé quotidienne attendue par le service IRM/KMI et appelle `getForecasts`. Les données reçues sont ensuite converties dans le format météo pivot Gladys. Les températures, vents et précipitations sont convertis lorsque Gladys demande le système impérial. Le cache est invalidé dès que la configuration est mise à jour.[4]
+Pour chaque demande, l’intégration arrondit les coordonnées à six décimales, calcule la clé quotidienne attendue par le service IRM/KMI et appelle `getForecasts`. Les données reçues sont ensuite converties dans le format météo pivot Gladys. Conformément au contrat météo Gladys, le vent est renvoyé en m/s en système métrique (l’IRM/KMI fournit des km/h) ; températures, vents et précipitations sont convertis lorsque Gladys demande le système impérial. Le cache est invalidé dès que la configuration est mise à jour.[4]
 
 Les codes d’état de l’IRM/KMI sont traduits explicitement vers les conditions du pivot Gladys. Par exemple, les codes 0–1 correspondent à un ciel dégagé, les codes 24–27 au brouillard et les codes 11–12 ainsi que 22–23 à la neige. Les avertissements de niveau 1, 2 et 3 deviennent respectivement `minor`, `moderate` et `severe`.[1] [4]
 
@@ -44,7 +44,7 @@ L’API ne fournit pas de données d’humidité ni de point de rosée. L’int�
 
 ## Développement et vérification
 
-La suite de tests comprend un échantillon de réponse IRM/KMI, les conversions métriques/impériales, la signature de requête quotidienne, les alertes, le cache et la validation de configuration.
+La suite de tests comprend le câblage SDK exécuté contre le faux Gladys du SDK (`@gladysassistant/integration-sdk/testing`), la cohérence du manifeste, les scripts de publication, un échantillon de réponse IRM/KMI, les conversions métriques/impériales, la signature de requête quotidienne, les alertes, le cache et la validation de configuration.
 
 ```bash
 npm test

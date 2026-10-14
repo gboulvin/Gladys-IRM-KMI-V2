@@ -2,27 +2,32 @@
 // Avertissements IRM/KMI -> alertes météo pivot Gladys.
 // -----------------------------------------------------------------------------
 
+import { WEATHER_ALERT_SEVERITIES, WEATHER_ALERT_TYPES } from '@gladysassistant/integration-sdk';
+
 const ALERT_TYPE_BY_WARNING_ID = {
-  0: 'wind',
-  1: 'rain',
-  2: 'snow',
-  3: 'thunderstorm',
-  7: 'fog',
-  9: 'cold',
-  10: 'heat',
-  12: 'thunderstorm',
-  13: 'thunderstorm',
-  14: 'thunderstorm',
-  15: 'coastal',
-  17: 'cold',
+  0: WEATHER_ALERT_TYPES.WIND,
+  1: WEATHER_ALERT_TYPES.RAIN,
+  2: WEATHER_ALERT_TYPES.SNOW,
+  3: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  7: WEATHER_ALERT_TYPES.FOG,
+  9: WEATHER_ALERT_TYPES.COLD,
+  10: WEATHER_ALERT_TYPES.HEAT,
+  12: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  13: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  14: WEATHER_ALERT_TYPES.THUNDERSTORM,
+  15: WEATHER_ALERT_TYPES.COASTAL,
+  17: WEATHER_ALERT_TYPES.COLD,
 };
 
 const SEVERITY_BY_LEVEL = {
-  1: 'minor',
-  2: 'moderate',
-  3: 'severe',
+  1: WEATHER_ALERT_SEVERITIES.MINOR,
+  2: WEATHER_ALERT_SEVERITIES.MODERATE,
+  3: WEATHER_ALERT_SEVERITIES.SEVERE,
 };
 
+// Bornes du contrat météo B.18 : au-delà, le cœur Gladys tronque ou ignore.
+// Le SDK les définit sans les exporter publiquement.
+const MAX_ALERTS = 10;
 const MAX_EVENT_LENGTH = 100;
 const MAX_DESCRIPTION_LENGTH = 5000;
 
@@ -55,7 +60,10 @@ function buildAlerts(warnings, { language = 'fr' } = {}) {
     return [];
   }
 
-  return warnings.flatMap((warning) => {
+  // Gladys ne conserve que les dix premières alertes : inutile d’en envoyer plus.
+  return warnings.flatMap(toAlert).slice(0, MAX_ALERTS);
+
+  function toAlert(warning) {
     const id = Number(warning?.warningType?.id);
     const level = Number(warning?.warningLevel);
     const severity = SEVERITY_BY_LEVEL[level];
@@ -86,7 +94,7 @@ function buildAlerts(warnings, { language = 'fr' } = {}) {
       alert.end = end;
     }
     return [alert];
-  });
+  }
 }
 
 /**
@@ -104,6 +112,7 @@ function toIsoDate(value) {
 
 export {
   ALERT_TYPE_BY_WARNING_ID,
+  MAX_ALERTS,
   MAX_DESCRIPTION_LENGTH,
   MAX_EVENT_LENGTH,
   SEVERITY_BY_LEVEL,

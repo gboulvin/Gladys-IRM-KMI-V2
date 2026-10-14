@@ -17,11 +17,12 @@
 
 ## Modules
 
-Le point d’entrée reste volontairement mince. Il associe les hooks météo du SDK à quatre modules indépendants : un client HTTP pour le protocole IRM/KMI, un cache mémoire par position, un normaliseur de prévision et un normaliseur d’avertissements. Cette séparation reprend le principe du template officiel — infrastructure SDK dans le point d’entrée, logique métier isolée — et l’architecture de l’intégration Météo France.[3]
+Le point d’entrée reste volontairement mince ; `src/app.js` reçoit le client Gladys en paramètre, ce qui permet de le tester contre le faux Gladys du SDK. Il associe les hooks météo du SDK à quatre modules indépendants : un client HTTP pour le protocole IRM/KMI, un cache mémoire par position, un normaliseur de prévision et un normaliseur d’avertissements. Cette séparation reprend le principe du template officiel — infrastructure SDK dans le point d’entrée, logique métier isolée — et l’architecture de l’intégration Météo France.[3]
 
 | Module                  | Responsabilité                                                                                                 |
 | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `index.js`              | Initialiser le SDK, recevoir les requêtes Gladys, actualiser la configuration et publier l’état de connexion.  |
+| `index.js`              | Instancier le SDK, enregistrer les handlers puis se connecter.                                                 |
+| `src/app.js`            | Recevoir les requêtes Gladys, actualiser la configuration et publier l’état de connexion.                      |
 | `src/irm-kmi-api.js`    | Construire l’URL signée du jour, appliquer un délai d’expiration, valider le code HTTP et décoder le JSON.     |
 | `src/forecast.js`       | Transformer les observations et prévisions IRM/KMI dans le pivot Gladys, avec conversions métrique / impérial. |
 | `src/conditions.js`     | Traduire les codes d’icône IRM/KMI vers les conditions normalisées Gladys.                                     |
@@ -37,7 +38,7 @@ Les données `obs`, `for.hourly`, `for.daily` et `for.warning` du fournisseur co
 | `obs.temp`                                      | `temperature`                                | °C ou °F selon les unités demandées.                                   |
 | `obs.ww`, `obs.dayNight`                        | `weather`, `is_day`                          | Table de correspondance explicite des codes 0 à 27.                    |
 | `for.hourly[].temp`                             | `hours[].temperature`                        | Jusqu’à vingt-quatre entrées successives à partir de l’heure courante. |
-| `for.hourly[].windSpeedKm`, `windPeakSpeedKm`   | `wind_speed`, `wind_gust`                    | km/h ou mph ; les rafales nulles sont omises.                          |
+| `for.hourly[].windSpeedKm`, `windPeakSpeedKm`   | `wind_speed`, `wind_gust`                    | m/s ou mph ; les rafales nulles sont omises.                           |
 | `for.hourly[].precipQuantity`, `precipChance`   | `precipitation`, `precipitation_probability` | mm ou pouces ; probabilité conservée sur l’échelle 0–100.              |
 | `for.daily[].tempMin`, `tempMax`                | `days[].temperature_min`, `temperature_max`  | Valeurs ordonnées, avec absence tolérée pour une période nocturne.     |
 | `for.daily[].dawnRiseSeconds`, `dawnSetSeconds` | `sunrise`, `sunset`                          | Secondes depuis minuit de la journée locale.                           |

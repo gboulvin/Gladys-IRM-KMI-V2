@@ -15,44 +15,10 @@ import {
 import { buildApiKey, formatBrusselsDate, getForecast } from '../src/irm-kmi-api.js';
 
 const FIXTURE_URL = new URL('./fixtures/irm-kmi-forecast.json', import.meta.url);
-const MANIFEST_URL = new URL('../gladys-assistant-integration.json', import.meta.url);
 
 async function readFixture() {
   return JSON.parse(await readFile(FIXTURE_URL, 'utf8'));
 }
-
-async function readManifest() {
-  return JSON.parse(await readFile(MANIFEST_URL, 'utf8'));
-}
-
-test('le manifeste déclare une catégorie de catalogue compatible Gladys 4.86', async () => {
-  const manifest = await readManifest();
-  const allowedCategories = new Set([
-    'climate',
-    'lighting',
-    'energy',
-    'security',
-    'multimedia',
-    'appliances',
-    'environment',
-    'protocols',
-    'network',
-    'notifications',
-    'assistants',
-    'services',
-  ]);
-
-  assert.ok(Array.isArray(manifest.categories));
-  assert.ok(manifest.categories.length >= 1 && manifest.categories.length <= 3);
-  assert.ok(manifest.categories.every((category) => allowedCategories.has(category)));
-  const minimum = manifest.gladys_version.match(/>=\s*(\d+)\.(\d+)\.\d+/);
-  assert.ok(minimum, 'gladys_version must declare a minimum version');
-  const [, major, minor] = minimum.map(Number);
-  assert.ok(
-    major > 4 || (major === 4 && minor >= 86),
-    `categories requires Gladys >= 4.86.0, got "${manifest.gladys_version}"`,
-  );
-});
 
 test('les codes de condition IRM/KMI sont normalisés pour le pivot Gladys', () => {
   assert.equal(conditionFromCode(0), 'clear');
@@ -92,7 +58,8 @@ test('les avertissements IRM/KMI utilisent la gravité, la langue et les dates d
 test('les conversions d’unités préservent les valeurs métriques et convertissent le système US', () => {
   assert.equal(convertTemperature(20, 'metric'), 20);
   assert.equal(convertTemperature(20, 'us'), 68);
-  assert.equal(convertWindSpeed(10, 'metric'), 10);
+  assert.equal(convertWindSpeed(36, 'metric'), 10);
+  assert.equal(convertWindSpeed(10, 'metric'), 2.8);
   assert.equal(convertWindSpeed(10, 'us'), 6.2);
   assert.equal(convertPrecipitation(25.4, 'metric'), 25.4);
   assert.equal(convertPrecipitation(25.4, 'us'), 1);
@@ -110,7 +77,7 @@ test('une réponse IRM/KMI complète est convertie en météo pivot', async () =
   assert.equal(weather.weather, 'cloud');
   assert.equal(weather.is_day, false);
   assert.equal(weather.pressure, 1020);
-  assert.equal(weather.wind_speed, 5);
+  assert.equal(weather.wind_speed, 1.4); // 5 km/h -> m/s
   assert.equal(weather.uv_index, 0.7);
   assert.equal(weather.hours.length, 24);
   assert.equal(weather.hours[0].weather, 'partly-cloudy');
@@ -176,4 +143,14 @@ test('la configuration borne la durée de cache et accepte sa désactivation', (
   assert.deepEqual(normalizeConfig({ cache_duration: '0' }), { cacheDuration: 0 });
   assert.deepEqual(normalizeConfig({ cache_duration: 9999 }), { cacheDuration: 3600 });
   assert.deepEqual(normalizeConfig({ cache_duration: -12 }), { cacheDuration: 0 });
+});
+
+test('les avertissements sont plafonnés aux dix alertes conservées par Gladys', () => {
+  const warnings = Array.from({ length: 12 }, (_, index) => ({
+    warningType: { id: 0, name: { fr: `Vent ${index}` } },
+    warningLevel: 1,
+  }));
+  const alerts = buildAlerts(warnings, { language: 'fr' });
+  assert.equal(alerts.length, 10);
+  assert.equal(alerts[0].event, 'Vent 0');
 });

@@ -11,7 +11,7 @@ import { createHash } from 'node:crypto';
 const API_URL = 'https://app.meteo.be/services/appv4/';
 const DEFAULT_TIMEOUT_MS = 20_000;
 const COORDINATE_DECIMALS = 6;
-const USER_AGENT = 'gladys-meteo-benelux/1.0.0 (+https://github.com/)';
+const USER_AGENT = 'gladys-meteo-benelux (+https://github.com/gboulvin/Gladys-IRM-KMI-V2)';
 
 /**
  * @description Formate une date dans le fuseau de Bruxelles pour la signature.
