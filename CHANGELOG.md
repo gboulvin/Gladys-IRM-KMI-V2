@@ -6,6 +6,8 @@ project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-10-22
+
 ### Security
 
 - `brace-expansion`, pulled in by ESLint, raised to 5.0.12 against the
@@ -48,6 +50,7 @@ project uses [semantic versioning](https://semver.org/).
 
 - Update the integration for Gladys 4.86 (catalog `categories`).
 
-[Unreleased]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.0.3...v1.1.0
 [1.0.3]: https://github.com/gboulvin/Gladys-IRM-KMI-V2/compare/v1.0.2...v1.0.3

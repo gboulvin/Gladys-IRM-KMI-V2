@@ -1,6 +1,6 @@
 {
   "name": "gladys-meteo-benelux",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "External Gladys weather integration powered by IRM/KMI data for Belgium, Luxembourg and the Netherlands.",
   "type": "module",
