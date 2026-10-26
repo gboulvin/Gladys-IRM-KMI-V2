@@ -41,7 +41,7 @@ The API does not provide humidity or dew point, so the integration does not inve
 
 ## Development
 
-The project follows the [official Gladys JavaScript integration template][3] and uses [`@gladysassistant/integration-sdk`][5] 0.15, its only runtime dependency. Node.js 22 or later is required; the Docker image ships Node.js 24.
+The project follows the [official Gladys JavaScript integration template][3] and uses [`@gladysassistant/integration-sdk`][5] 0.16, its only runtime dependency. Node.js 22 or later is required; the Docker image ships Node.js 24.
 
 ```bash
 npm ci
