@@ -6,6 +6,13 @@ project uses [semantic versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Requires Gladys 5.3.0 or later: the manifest declares search keywords and
+  the countries where the integration works, for the new catalog of Gladys
+  5.3.
+- Integration SDK 0.16.
+
 ## [1.1.1] - 2026-10-22
 
 ### Security
